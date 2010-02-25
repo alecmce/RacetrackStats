@@ -15,9 +15,13 @@ package alecmce.utils
 			instance = new PixelFont();
 			data = new BitmapData(400,20,true, 0xFFFFEE66);
 			
-			instance.write("ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890", data, new Point());
+			instance.write("ABCDEFGHIJKLMNOPQRSTUVWXYZ\r1234567890", data, new Point());
 			
-			addChild(new Bitmap(data));
+			var bmp:Bitmap = new Bitmap(data);
+			bmp.scaleX = bmp.scaleY = 4;
+			
+			addChild(bmp);
+			
 		}
 	}
 }

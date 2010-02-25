@@ -15,8 +15,8 @@ package alecmce.utils
 	 */
 	public class PixelFont 
 	{
-		private const START:Array = [0,5,10,15,20,24,28,33,38,40,45,50,54,60,66,71,76,81,86,91,95,100,106,112,118,124,128,132,137,142,147,152,157,162,167,172];
-		private const LENGTH:Array = [4,4,4,4,3,3,4,4,1,4,4,3,5,5,4,4,4,4,5,3,4,5,5,5,5,3,4,4,4,4,4,4,4,4,4];
+		private const START:Array = [0,5,10,15,20, 24,28,33,38,40, 45,50,54,60,66, 71,76,81,86,91, 95,100,106,112,118, 124,128,133,137,142, 147,152,157,162,167, 172];
+		private const LENGTH:Array = [4,4,4,4,3, 3,4,4,1,4, 4,3,5,5,4, 4,4,4,5,3, 4,5,5,5,5, 3,4,3,4,4, 4,4,4,4,4, 4];
 
 		[Embed(source="../../../img/pixelfont.gif")]
 		private var embeddedClass:Class;		
@@ -34,6 +34,8 @@ package alecmce.utils
 		
 		public function write(text:String, to:BitmapData, start:Point):void
 		{
+			var working:Point = start.clone();
+			
 			var length:int = text.length;
 			for (var i:int = 0; i < length; i++)
 			{
@@ -41,17 +43,24 @@ package alecmce.utils
 				if (index > 64 && index < 91)
 					index -= 65;
 				else if (index > 47 && index < 58)
-					index -= 25;
+					index -= 22;
 				else
-				{ trace(index);
-					continue; }
+				{
+					if (index == 10 || index == 13)
+					{
+						working.x = start.x;
+						working.y += 7;
+					}
+					
+					continue;
+				}
 				
 				var width:int = LENGTH[index];
 				rect.x = START[index];
 				rect.width = width;
 				
-				to.copyPixels(source, rect, start, null, null, true);
-				start.offset(width + 2, 0);
+				to.copyPixels(source, rect, working, null, null, true);
+				working.offset(width + 2, 0);
 			}
 		}
 		
