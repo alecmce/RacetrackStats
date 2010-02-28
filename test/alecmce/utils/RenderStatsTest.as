@@ -15,9 +15,10 @@ package alecmce.utils
 		private static const COUNT:int = 4;
 
 		public var stats:RacetrackStats;
-		
 
-		public var iterative:IterativeGraph;		public var compound:IterativeCompoundGraph;		public var average:IterativeGraphWithRollingMean;
+		public var iterative:IterativeGraph;
+		public var compound:IterativeCompoundGraph;
+		public var average:IterativeGraphWithRollingMean;
 		
 		private var slowness:int;
 		private var step:int;
@@ -25,12 +26,11 @@ package alecmce.utils
 
 		public function RenderStatsTest()
 		{	
-			trace("init app");
-			
 			slowness = 1;
 			maximum = 100;
 			
-			iterative = new IterativeGraph(200, 100, maximum, 0xFFFF0000);			iterative.bitmap.y = 100;
+			iterative = new IterativeGraph(200, 100, maximum, 0xFFFF0000);
+			iterative.bitmap.y = 100;
 			addChild(iterative.bitmap);
 			
 			compound = new IterativeCompoundGraph(200, 100, maximum, [0xFFFF0000,0xFFFFFF00,0xFF00FF00,0xFF1E90FF]);
@@ -47,7 +47,6 @@ package alecmce.utils
 
 		private function onEnterFrame(event:Event):void 
 		{
-			trace("<target enterframe />");
 			var t:int = getTimer();
 			slowdown(slowness++);
 			
@@ -56,7 +55,8 @@ package alecmce.utils
 			else if (step < 100 && step > 50)
 				maximum = 50;
 				
-			iterative.update(int(Math.random() * maximum));			average.update(int(Math.random() * maximum));
+			iterative.update(int(Math.random() * maximum));
+			average.update(int(Math.random() * maximum));
 			
 			var count:int = COUNT;
 			var arr:Array = [];

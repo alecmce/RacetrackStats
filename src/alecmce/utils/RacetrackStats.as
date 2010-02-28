@@ -56,7 +56,8 @@ package alecmce.utils
 //		private var framerate:IterativeGraphWithRollingMean;
 
 		private var writer:PixelWriter;
-		private var overlay:BitmapData;		private var output:BitmapData;
+		private var overlay:BitmapData;
+		private var output:BitmapData;
 		private var rect:Rectangle;
 
 		private var time:int;
@@ -77,16 +78,23 @@ package alecmce.utils
 			
 			data = [0,0,0];
 			
-			var barColors:Array = [0x6600FF00,0x661E90FF,0x66FF0000];			var meanColors:Array = [0xFF00FF00,0xFF1E90FF,0xFFFF0000];
+			var barColors:Array = [0x6600FF00,0x661E90FF,0x66FF0000];
+			var meanColors:Array = [0xFF00FF00,0xFF1E90FF,0xFFFF0000];
 			
 			graph = new IterativeCompoundGraphWithRollingMeans(WIDTH, HEIGHT, 50, barColors, meanColors, VALUES_TO_COUNT);
-//			code = new IterativeGraphWithRollingMean(100,60,50,0x6600FF00,0xFF00FF00,20);//			renders = new IterativeGraphWithRollingMean(100,60,50,0x661E90FF,0xFF1E90FF,20);
-//			renders.bitmap.x = 100;//			drawing = new IterativeGraphWithRollingMean(100,60,50,0x66FF0000,0xFFFF0000,20);
-//			drawing.bitmap.x = 200;//			framerate = new IterativeGraphWithRollingMean(100,60,50,0x669900FF,0xFF9900FF,20);
+//			code = new IterativeGraphWithRollingMean(100,60,50,0x6600FF00,0xFF00FF00,20);
+//			renders = new IterativeGraphWithRollingMean(100,60,50,0x661E90FF,0xFF1E90FF,20);
+//			renders.bitmap.x = 100;
+//			drawing = new IterativeGraphWithRollingMean(100,60,50,0x66FF0000,0xFFFF0000,20);
+//			drawing.bitmap.x = 200;
+//			framerate = new IterativeGraphWithRollingMean(100,60,50,0x669900FF,0xFF9900FF,20);
 //			framerate.bitmap.x = 300;
 			
 			container.addChild(graph.bitmap);
-//			container.addChild(renders.bitmap);//			container.addChild(drawing.bitmap);//			container.addChild(framerate.bitmap);			container.addChild(new Bitmap(output));
+//			container.addChild(renders.bitmap);
+//			container.addChild(drawing.bitmap);
+//			container.addChild(framerate.bitmap);
+			container.addChild(new Bitmap(output));
 			
 			stage.addChild(container);
 			
@@ -100,12 +108,12 @@ package alecmce.utils
 				throw new Error(HANDLE_ERROR);
 			
 			handle.addEventListener(Event.ENTER_FRAME, onEnterFrame, false, int.MAX_VALUE);
-			stage.addEventListener(Event.RENDER, onRenderBegins, false, int.MAX_VALUE);			stage.addEventListener(Event.RENDER, onRenderEnds, false, -int.MAX_VALUE);	
+			stage.addEventListener(Event.RENDER, onRenderBegins, false, int.MAX_VALUE);
+			stage.addEventListener(Event.RENDER, onRenderEnds, false, -int.MAX_VALUE);	
 		}
 		
 		private function onEnterFrame(event:Event):void
 		{
-			trace("onEnterFrame");
 			var t:int = getTimer();
 			data[2] += t - time;
 			++frames_per_second;
@@ -122,14 +130,13 @@ package alecmce.utils
 
 		private function onRenderBegins(event:Event):void
 		{
-			trace("onRenderBegins");
-			var t:int = getTimer();			data[0] += t - time;
+			var t:int = getTimer();
+			data[0] += t - time;
 			time = t;
 		}
 		
 		private function onRenderEnds(event:Event):void 
 		{
-			trace("onRenderEnds");
 			var t:int = getTimer();
 			data[1] += t - time;
 			time = t;
@@ -164,6 +171,5 @@ package alecmce.utils
 		{
 			handle.removeEventListener(Event.ENTER_FRAME, onHandle);
 		}
-		
 	}
 }
