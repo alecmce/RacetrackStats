@@ -1,6 +1,7 @@
 package alecmce.utils 
 {
 	import alecmce.stats.ui.iterativegraph.IterativeCompoundGraphWithRollingMeans;
+	import alecmce.stats.ui.iterativegraph.IterativeGraphWithRollingMean;
 
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
@@ -39,6 +40,7 @@ package alecmce.utils
 		private const ORIGIN:Point = new Point(0, 0);
 		private const OVERLAY:Point = new Point(2, 2);
 		private const OUTPUT:Point = new Point(52, 2);
+		private const TO_MEGABYTES:Number = 9.53674316e-7;
 		
 		private var stage:Stage;
 		
@@ -88,15 +90,14 @@ package alecmce.utils
 			
 			frames_per_second = 0;
 			second_time = time = getTimer();
-			stage.addEventListener(Event.ENTER_FRAME, onEnterFrame, false, int.MAX_VALUE);			stage.addEventListener(Event.RENDER, onRenderBegins, false, -int.MAX_VALUE);						stage.addEventListener(Event.RENDER, onRenderEnds, false, int.MAX_VALUE);	
+			stage.addEventListener(Event.ENTER_FRAME, onEnterFrame, false, -int.MAX_VALUE);			stage.addEventListener(Event.RENDER, onRenderBegins, false, -int.MAX_VALUE);			stage.addEventListener(Event.RENDER, onRenderEnds, false, int.MAX_VALUE);	
 		}
 		
 		private function onEnterFrame(event:Event):void
 		{
-			++frames_per_second;
-			
 			var t:int = getTimer();
 			data[2] += t - time;
+			++frames_per_second;
 			
 			if (t - second_time > 999)
 			{
@@ -104,6 +105,7 @@ package alecmce.utils
 				second_time = t;
 			}
 			
+			stage.invalidate();
 			time = getTimer();
 		}
 
@@ -128,7 +130,7 @@ package alecmce.utils
 			output.copyPixels(overlay, rect, ORIGIN);
 			
 			var text:String = frames_per_second + "/" + stage.frameRate + "\n";
-			text += (System.totalMemory * 0.000000954).toFixed(1) + "KB\n";
+			text += (System.totalMemory * TO_MEGABYTES).toFixed(1) + "MB\n";
 			text += data.join("\n");
 			writer.write(text, output, OUTPUT);
 			

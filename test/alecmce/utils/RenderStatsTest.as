@@ -6,6 +6,7 @@ package alecmce.utils
 
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.utils.getTimer;
 
 	public class RenderStatsTest extends Sprite 
 	{
@@ -42,13 +43,14 @@ package alecmce.utils
 
 		private function onEnterFrame(event:Event):void 
 		{
-//			slowdown(slowness++);
-//			
-//			if (step++ == 100)
-//				maximum = 200;
-//			else if (step < 100 && step > 50)
-//				maximum = 50;
-//				
+			var t:int = getTimer();
+			slowdown(slowness++);
+			
+			if (step++ == 100)
+				maximum = 200;
+			else if (step < 100 && step > 50)
+				maximum = 50;
+				
 			iterative.update(int(Math.random() * maximum));			average.update(int(Math.random() * maximum));
 			
 			var count:int = COUNT;
@@ -64,7 +66,7 @@ package alecmce.utils
 		private function slowdown(value:uint):void
 		{
 			for (var i:uint = 0; i < value * value; i++)
-				var n:Number = Math.pow(i, 2) / Math.sin(i) / Math.cos(i) / Math.sqrt(i);
+				Math.pow(i, 2) / Math.sin(i) / Math.cos(i) / Math.sqrt(i);
 		}
 		
 		
