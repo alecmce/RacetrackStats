@@ -1,11 +1,11 @@
 package alecmce.utils 
 {
 	import alecmce.stats.ui.iterativegraph.IterativeCompoundGraphWithRollingMeans;
-	import alecmce.stats.ui.iterativegraph.IterativeGraphWithRollingMean;
 
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.DisplayObjectContainer;
+	import flash.display.Shape;
 	import flash.display.Sprite;
 	import flash.display.Stage;
 	import flash.events.Event;
@@ -34,6 +34,8 @@ package alecmce.utils
 	 */
 	public class RacetrackStats 
 	{
+		private const HANDLE_ERROR:String = "At the top of your application class, please add the line RacetrackStats.prep() in order for Racetrack stats to function correctly";
+		
 		private const WIDTH:int = 100;
 		private const HEIGHT:int = 60;
 		private const VALUES_TO_COUNT:int = 20;
@@ -90,11 +92,20 @@ package alecmce.utils
 			
 			frames_per_second = 0;
 			second_time = time = getTimer();
-			stage.addEventListener(Event.ENTER_FRAME, onEnterFrame, false, -int.MAX_VALUE);			stage.addEventListener(Event.RENDER, onRenderBegins, false, -int.MAX_VALUE);			stage.addEventListener(Event.RENDER, onRenderEnds, false, int.MAX_VALUE);	
+			
+			var node:Sprite = new Sprite();
+			DisplayObjectContainer(stage.root).addChild(node);
+			
+			if (!handle)
+				throw new Error(HANDLE_ERROR);
+			
+			handle.addEventListener(Event.ENTER_FRAME, onEnterFrame, false, int.MAX_VALUE);
+			stage.addEventListener(Event.RENDER, onRenderBegins, false, int.MAX_VALUE);			stage.addEventListener(Event.RENDER, onRenderEnds, false, -int.MAX_VALUE);	
 		}
 		
 		private function onEnterFrame(event:Event):void
 		{
+			trace("onEnterFrame");
 			var t:int = getTimer();
 			data[2] += t - time;
 			++frames_per_second;
@@ -111,12 +122,14 @@ package alecmce.utils
 
 		private function onRenderBegins(event:Event):void
 		{
+			trace("onRenderBegins");
 			var t:int = getTimer();			data[0] += t - time;
 			time = t;
 		}
 		
 		private function onRenderEnds(event:Event):void 
 		{
+			trace("onRenderEnds");
 			var t:int = getTimer();
 			data[1] += t - time;
 			time = t;
@@ -137,5 +150,20 @@ package alecmce.utils
 			data[0] = data[1] = data[2] = 0;
 			frames_per_second = 0;
 		}
+		
+		
+		private static var handle:Shape;
+		
+		public static function prep():void
+		{
+			handle = new Shape();
+			handle.addEventListener(Event.ENTER_FRAME, onHandle);
+		}
+		
+		private static function onHandle(event:Event):void
+		{
+			handle.removeEventListener(Event.ENTER_FRAME, onHandle);
+		}
+		
 	}
 }

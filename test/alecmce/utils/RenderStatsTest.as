@@ -10,9 +10,12 @@ package alecmce.utils
 
 	public class RenderStatsTest extends Sprite 
 	{
+		RacetrackStats.prep();
+		
 		private static const COUNT:int = 4;
 
 		public var stats:RacetrackStats;
+		
 
 		public var iterative:IterativeGraph;		public var compound:IterativeCompoundGraph;		public var average:IterativeGraphWithRollingMean;
 		
@@ -22,6 +25,8 @@ package alecmce.utils
 
 		public function RenderStatsTest()
 		{	
+			trace("init app");
+			
 			slowness = 1;
 			maximum = 100;
 			
@@ -37,12 +42,12 @@ package alecmce.utils
 			addChild(average.bitmap);
 			
 			addEventListener(Event.ENTER_FRAME, onEnterFrame);
-			
 			stats = new RacetrackStats(stage);
 		}
 
 		private function onEnterFrame(event:Event):void 
 		{
+			trace("<target enterframe />");
 			var t:int = getTimer();
 			slowdown(slowness++);
 			
