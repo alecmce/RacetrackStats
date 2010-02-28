@@ -7,12 +7,12 @@ package alecmce.utils
 
 	public class PixelFontTest extends Sprite 
 	{
-		private var instance:PixelFont;
+		private var instance:PixelWriter;
 		private var data:BitmapData;
 
 		public function PixelFontTest()
 		{
-			instance = new PixelFont();
+			instance = new PixelWriter();
 			data = new BitmapData(400,20,true, 0xFFFFEE66);
 			
 			instance.write("ABCDEFGHIJKLMNOPQRSTUVWXYZ\r1234567890", data, new Point());
