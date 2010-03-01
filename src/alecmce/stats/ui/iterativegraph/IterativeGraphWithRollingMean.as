@@ -28,7 +28,7 @@ package alecmce.stats.ui.iterativegraph
 			if (isEstablished)
 			{
 				var mean:Number = _rollingMean.mean;
-				_rollingPointerBounds.y = int((_maximum - mean) * _multiplier); - 1;
+				_rollingPointerBounds.y = int((_maximum - mean) * _multiplier) - 1;
 				_data.fillRect(_rollingPointerBounds, _rollingColor);
 			}
 		}

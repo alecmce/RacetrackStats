@@ -83,10 +83,11 @@ package alecmce.stats.ui.iterativegraph
 			_rollingPointerBounds.y = _height;
 			while (i--)
 			{
+				_rollingPointerBounds.y -= _means[i].mean * _multiplier;
+				
 				if (!_established[i])
 					continue;
 				
-				_rollingPointerBounds.y -= _means[i].mean * _multiplier;
 				_data.fillRect(_rollingPointerBounds, _meanColors[i]);
 			}
 		}

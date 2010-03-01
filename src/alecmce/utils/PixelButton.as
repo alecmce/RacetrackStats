@@ -8,10 +8,12 @@ package alecmce.utils
 
 	public class PixelButton extends Sprite 
 	{
-		public static const PLUS:int = 0;
-		public static const MINUS:int = 6;		public static const LEFT:int = 11;		public static const RIGHT:int = 17;
+		public static const LEFT:int = 0;		public static const RIGHT:int = WIDTH + 1;
 		
-		[Embed(source="../../../img/pixelbutton.gif")]
+		public static const WIDTH:uint = 8;
+		public static const HEIGHT:uint = 8;
+		
+		[Embed(source="../../../img/pixelbuttons.gif")]
 		private var embeddedClass:Class;		
 		
 		public function PixelButton(type:int)
@@ -19,8 +21,8 @@ package alecmce.utils
 			useHandCursor = true;
 			
 			var asset:Bitmap = new embeddedClass();
-			var data:BitmapData = new BitmapData(5,5,false);
-			data.copyPixels(asset.bitmapData, new Rectangle(type,0,5,5), new Point(0, 0));
+			var data:BitmapData = new BitmapData(WIDTH,HEIGHT,false);
+			data.copyPixels(asset.bitmapData, new Rectangle(type,0,WIDTH,HEIGHT), new Point(0, 0));
 			asset.bitmapData.dispose();
 			asset.bitmapData = data;
 			addChild(asset);

@@ -46,6 +46,8 @@ package alecmce.utils
 				var index:int = text.charCodeAt(i);
 				if (index > 64 && index < 91)
 					index -= 65;
+				else if (index > 96 && index < 123)
+					index -= 97;
 				else if (index > 47 && index < 58)
 					index -= 22;
 				else if (index == 47)

@@ -1,6 +1,5 @@
 package alecmce.stats.ui.iterativegraph 
 {
-	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
@@ -20,7 +19,6 @@ package alecmce.stats.ui.iterativegraph
 		
 		protected const OVER_ESTIMATE:Number = 1.2;
 
-		protected var _bitmap:Bitmap;
 		protected var _data:BitmapData;
 		protected var _rect:Rectangle;
 		protected var _maximum:Number;
@@ -34,12 +32,11 @@ package alecmce.stats.ui.iterativegraph
 			_multiplier = height / maximum;
 			
 			_data = new BitmapData(width, height, true, 0);
-			_bitmap = new Bitmap(_data);
 		}
 		
-		public function get bitmap():Bitmap
+		public function get data():BitmapData
 		{
-			return _bitmap;
+			return _data;
 		}
 		
 		public function get maximum():Number
@@ -56,12 +53,12 @@ package alecmce.stats.ui.iterativegraph
 			var dY:Number = _multiplier * (newMaximum - _maximum);
 			var matrix:Matrix = new Matrix(1,0,0,dH,0,dY);
 
-			var replacement:BitmapData = new BitmapData(_data.width, _data.height, true, 0);
-			replacement.draw(_data, matrix);
-			_bitmap.bitmapData = replacement;
-			_data.dispose();
-			_data = replacement;
-			
+			var tmp:BitmapData = _data.clone();
+
+			_data.fillRect(_data.rect, 0);
+			_data.draw(tmp, matrix);
+			tmp.dispose();
+
 			_maximum = newMaximum;
 		}
 	}
