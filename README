@@ -1,0 +1,10 @@
+TODO:
+
+The structure of the graphs is wrong. They should take a rolling mean or other data
+provider as an input at the start, and then some form of notification relationship
+should be established. (AS3Signals, I suppose)
+
+In order to counter the problem that the 'render' portion takes up both the time it
+takes to render the screen and the remaining 'empty slices', the autoCrank feature
+will up the frame-rate until there are no more 'empty slices', then stabilizes. This
+should allow us to see not only.

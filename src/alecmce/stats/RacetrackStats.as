@@ -1,6 +1,8 @@
-package alecmce.utils 
+package alecmce.stats 
 {
 	import alecmce.stats.ui.iterativegraph.IterativeCompoundGraphWithRollingMeans;
+	import alecmce.stats.ui.iterativegraph.IterativeGraphWithRollingMean;
+	import alecmce.utils.PixelWriter;
 
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
@@ -50,10 +52,10 @@ package alecmce.utils
 		
 		private var data:Array;
 		private var graph:IterativeCompoundGraphWithRollingMeans;
-//		private var drawing:IterativeGraphWithRollingMean;
-//		private var code:IterativeGraphWithRollingMean;
-//		private var renders:IterativeGraphWithRollingMean;
-//		private var framerate:IterativeGraphWithRollingMean;
+		private var drawing:IterativeGraphWithRollingMean;
+		private var code:IterativeGraphWithRollingMean;
+		private var renders:IterativeGraphWithRollingMean;
+		private var framerate:IterativeGraphWithRollingMean;
 
 		private var writer:PixelWriter;
 		private var overlay:BitmapData;
@@ -63,10 +65,15 @@ package alecmce.utils
 		private var time:int;
 		private var second_time:int;
 		private var frames_per_second:int;
+		
+		private var autoCrank:Boolean;
+		private var crankOffset:int;
 
-		public function RacetrackStats(stage:Stage)
+		public function RacetrackStats(stage:Stage, autoCrank:Boolean)
 		{
 			this.stage = stage;
+			this.autoCrank = autoCrank;
+			this.crankOffset = 0;
 			
 			container = new Sprite();
 			
@@ -82,18 +89,19 @@ package alecmce.utils
 			var meanColors:Array = [0xFF00FF00,0xFF1E90FF,0xFFFF0000];
 			
 			graph = new IterativeCompoundGraphWithRollingMeans(WIDTH, HEIGHT, 50, barColors, meanColors, VALUES_TO_COUNT);
-//			code = new IterativeGraphWithRollingMean(100,60,50,0x6600FF00,0xFF00FF00,20);
-//			renders = new IterativeGraphWithRollingMean(100,60,50,0x661E90FF,0xFF1E90FF,20);
-//			renders.bitmap.x = 100;
-//			drawing = new IterativeGraphWithRollingMean(100,60,50,0x66FF0000,0xFFFF0000,20);
-//			drawing.bitmap.x = 200;
-//			framerate = new IterativeGraphWithRollingMean(100,60,50,0x669900FF,0xFF9900FF,20);
-//			framerate.bitmap.x = 300;
+			code = new IterativeGraphWithRollingMean(100,60,50,0x6600FF00,0xFF00FF00,VALUES_TO_COUNT);
+			code.bitmap.x = 100;
+			renders = new IterativeGraphWithRollingMean(100,60,50,0x661E90FF,0xFF1E90FF,VALUES_TO_COUNT);
+			renders.bitmap.x = 200;
+			drawing = new IterativeGraphWithRollingMean(100,60,50,0x66FF0000,0xFFFF0000,20);
+			drawing.bitmap.x = 300;
+			framerate = new IterativeGraphWithRollingMean(100,60,stage.frameRate + 1,0x669900FF,0xFF9900FF,VALUES_TO_COUNT);
+			framerate.bitmap.x = 400;
 			
 			container.addChild(graph.bitmap);
-//			container.addChild(renders.bitmap);
-//			container.addChild(drawing.bitmap);
-//			container.addChild(framerate.bitmap);
+			container.addChild(code.bitmap);			container.addChild(renders.bitmap);
+			container.addChild(drawing.bitmap);
+			container.addChild(framerate.bitmap);
 			container.addChild(new Bitmap(output));
 			
 			stage.addChild(container);
@@ -144,15 +152,21 @@ package alecmce.utils
 		
 		private function update():void 
 		{
-			graph.update(data);
-			stage.invalidate();
-			
 			output.copyPixels(overlay, rect, ORIGIN);
 			
 			var text:String = frames_per_second + "/" + stage.frameRate + "\n";
 			text += (System.totalMemory * TO_MEGABYTES).toFixed(1) + "MB\n";
 			text += data.join("\n");
 			writer.write(text, output, OUTPUT);
+			
+			var n:Number = 1 / frames_per_second;
+			
+			data[0] *= n;
+			data[1] *= n;			data[2] *= n;			graph.update(data);
+			code.update(data[0]);
+			renders.update(data[1]);
+			drawing.update(data[2]);
+			framerate.update(frames_per_second);
 			
 			data[0] = data[1] = data[2] = 0;
 			frames_per_second = 0;

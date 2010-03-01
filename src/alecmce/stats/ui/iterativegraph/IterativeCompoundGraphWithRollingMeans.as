@@ -72,12 +72,19 @@ package alecmce.stats.ui.iterativegraph
 			
 			i = count;
 			_rect.top = _rect.bottom;
-			_rollingPointerBounds.y = _height;
 			while (i--)
 			{
 				_rect.top -= int(values[i] * _multiplier);
 				_data.fillRect(_rect, _barColors[i]);
 				_rect.bottom = _rect.top;
+			}
+			
+			i = count;
+			_rollingPointerBounds.y = _height;
+			while (i--)
+			{
+				if (!_established[i])
+					continue;
 				
 				_rollingPointerBounds.y -= _means[i].mean * _multiplier;
 				_data.fillRect(_rollingPointerBounds, _meanColors[i]);

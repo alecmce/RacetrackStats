@@ -1,6 +1,8 @@
 package alecmce.utils 
 {
+	import alecmce.stats.RacetrackStats;
 	import alecmce.stats.ui.iterativegraph.IterativeCompoundGraph;
+	import alecmce.stats.ui.iterativegraph.IterativeCompoundGraphWithRollingMeans;
 	import alecmce.stats.ui.iterativegraph.IterativeGraph;
 	import alecmce.stats.ui.iterativegraph.IterativeGraphWithRollingMean;
 
@@ -18,7 +20,7 @@ package alecmce.utils
 
 		public var iterative:IterativeGraph;
 		public var compound:IterativeCompoundGraph;
-		public var average:IterativeGraphWithRollingMean;
+		public var average:IterativeGraphWithRollingMean;		public var compaverage:IterativeCompoundGraphWithRollingMeans;
 		
 		private var slowness:int;
 		private var step:int;
@@ -41,8 +43,12 @@ package alecmce.utils
 			average.bitmap.y = 300;
 			addChild(average.bitmap);
 			
+			compaverage = new IterativeCompoundGraphWithRollingMeans(200, 100, maximum, [0x66FF0000,0x66FFFF00,0x6600FF00,0x661E90FF], [0xFFFF0000,0xFFFF8800,0xFF00FF00,0xFF1E90FF], 100);
+			compaverage.bitmap.x = 200;			compaverage.bitmap.y = 200;
+			addChild(compaverage.bitmap);
+			
 			addEventListener(Event.ENTER_FRAME, onEnterFrame);
-			stats = new RacetrackStats(stage);
+			stats = new RacetrackStats(stage, true);
 		}
 
 		private function onEnterFrame(event:Event):void 
@@ -50,11 +56,6 @@ package alecmce.utils
 			var t:int = getTimer();
 			slowdown(slowness++);
 			
-			if (step++ == 100)
-				maximum = 200;
-			else if (step < 100 && step > 50)
-				maximum = 50;
-				
 			iterative.update(int(Math.random() * maximum));
 			average.update(int(Math.random() * maximum));
 			
@@ -65,12 +66,12 @@ package alecmce.utils
 			while (i--)
 				arr.push(int(Math.random() * maximum * 0.33));
 			
-			compound.update(arr);
+			compound.update(arr);			compaverage.update(arr);
 		}
 		
 		private function slowdown(value:uint):void
 		{
-			for (var i:uint = 0; i < value * value; i++)
+			for (var i:uint = 0; i < value; i++)
 				Math.pow(i, 2) / Math.sin(i) / Math.cos(i) / Math.sqrt(i);
 		}
 		
