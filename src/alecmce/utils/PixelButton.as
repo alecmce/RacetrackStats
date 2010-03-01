@@ -6,6 +6,14 @@ package alecmce.utils
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 
+	/**
+	 * 
+	 * @author Alec McEachran
+	 * 
+	 * (c) 2010 alecmce.com
+	 * 
+	 * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+	 */
 	public class PixelButton extends Sprite 
 	{
 		public static const LEFT:int = 0;		public static const RIGHT:int = WIDTH + 1;

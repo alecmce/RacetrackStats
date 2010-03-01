@@ -24,11 +24,8 @@ package alecmce.profiling
 	 * 
 	 * The stats are collected into an array of data, which is passed into the
 	 * graph every frame. The data collected is [enter-frame,pre-render,render]. They
-	 * are colour coded, by default to the following colors:
-	 * 
-	 * enter-frame: green
-	 * pre-render: blue
-	 * render: red
+	 * are colour coded according to the RacetrackStatsStyle that is defined. See
+	 * the RacetrackStatsStyle constructor for details of the default colourings
 	 * 
 	 * @author Alec McEachran
 	 * 

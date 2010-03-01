@@ -1,6 +1,14 @@
 package alecmce.stats 
 {
 
+	/**
+	 * 
+	 * @author Alec McEachran
+	 * 
+	 * (c) 2010 alecmce.com
+	 * 
+	 * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
+	 */
 	public class RollingMean 
 	{
 		

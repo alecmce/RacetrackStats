@@ -13,9 +13,9 @@ package alecmce.utils
 		public function PixelFontTest()
 		{
 			instance = new PixelWriter();
-			data = new BitmapData(400,20,true, 0xFFFFEE66);
+			data = new BitmapData(400,30,true, 0xFFFFEE66);
 			
-			instance.write("ABCDEFGHIJKLMNOPQRSTUVWXYZ\r1234567890", data, new Point());
+			instance.write("ABCDEFGHIJKLMNOPQRSTUVWXYZ\r1234567890", data, new Point());			instance.write("abcdefghijklmnopqrstuvwxyz", data, new Point(0,20));
 			
 			var bmp:Bitmap = new Bitmap(data);
 			bmp.scaleX = bmp.scaleY = 4;

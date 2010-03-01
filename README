@@ -1,10 +1,59 @@
-TODO:
+== INTRODUCTION ==
 
-The structure of the graphs is wrong. They should take a rolling mean or other data
-provider as an input at the start, and then some form of notification relationship
-should be established. (AS3Signals, I suppose)
+RacetrackStats is a small, in-Flash performance profiler that gives real-time
+feedback about how the code is performing.
 
-In order to counter the problem that the 'render' portion takes up both the time it
-takes to render the screen and the remaining 'empty slices', the autoCrank feature
-will up the frame-rate until there are no more 'empty slices', then stabilizes. This
-should allow us to see not only.
+It is inspired by, and seeks to move forward from the inimitable Mr Doob's Stats.
+
+@see http://code.google.com/p/mrdoob/wiki/stats
+
+It is also based on the notion of the 'elastic racetrack', or how the Flash Player
+segments code into parts. In each frame, the Flash player will execute the code
+that is triggered through the internal event model. Then if stage.invalidate() is
+called, it will do further 'pre-render' code. Finally it will redraw the screen.
+
+For performance profiling, it is useful to be able to guage where the performance
+bottlenecks are. This project seeks to measure the time it takes for each of these
+aspects of the player to run.
+
+== PROBLEMS AND WORKAROUNDS ==
+
+If you x.addEventListener(Event.ENTER_FRAME ...) before the RacetrackStats is
+initialised, it is impossible (as far as I can fathom) for the RacetrackStats class
+to insert an ENTER_FRAME listener before that, unless it knows onto which object you
+asserted the listener. RacetrackStats therefore needs to hook into the ENTER_FRAME
+before anything else. Currently it requires you to call
+
+RacetrackStats.prep();
+
+before any code is run - at the top of your document class's constructor perhaps,
+or even just underneath the document class's class definition, outside the constructor.
+This feels unsatisfactory to me; I would love to know a better way to accomplish this.
+
+It is also not possible to differentiate in AS3 between the time that the
+player takes to render the screen and the time during which it is essentially
+doing nothing. Consequently, RacetrackStats attempts to take-over the frame-rate of
+the application and push it as fast as it can go, in order to minimise the time when
+the flash player is idle. This allows a more accurate assessment of how long the
+player is taking to render the screen.
+
+== PARADOX ==
+
+Of course, it should be noted that the stats package is considerably heavier than
+Mr Doob's original, which means that it is causing the frame-rate to drop more than
+the application would if the package wasn't there. It also causes the memory to
+be higher than it would be otherwise.
+
+== TODO ==
+
+> Create more real-use test situations
+> Investigate trend-line overwriting text bug
+> Use the RacetrackStatsStyle more fully to define size, text
+> Customise which graphs are displayed through the RacetrackStatsStyle
+
+== TOTHINKABOUT ==
+
+> Put some sort of scale on the graphs?
+> Add minimise functionality?
+> possibly 'magic keyword' functionality?
+> Is it too heavy?

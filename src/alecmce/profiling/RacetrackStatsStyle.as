@@ -2,6 +2,7 @@ package alecmce.profiling
 {
 	/**
 	 * 
+	 * 
 	 * @author Alec McEachran
 	 * 
 	 * (c) 2010 alecmce.com
