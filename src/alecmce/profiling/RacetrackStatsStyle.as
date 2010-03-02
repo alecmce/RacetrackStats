@@ -11,7 +11,10 @@ package alecmce.profiling
 	 */
 	public class RacetrackStatsStyle 
 	{
-		
+		public var width:uint;
+		public var height:uint;
+		public var meanValues:uint;
+
 		public var codeRGB:uint;
 		public var prerenderRGB:uint;
 		public var renderRGB:uint;
@@ -28,6 +31,10 @@ package alecmce.profiling
 
 		public function RacetrackStatsStyle() 
 		{
+			width = 100;
+			height = 60;
+			meanValues = 20;
+			
 			codeRGB = 0x00FF00;
 			prerenderRGB = 0x1E90FF;
 			renderRGB = 0xFF0000;
@@ -39,7 +46,7 @@ package alecmce.profiling
 			
 			adjustFrameRate = true;
 			
-			descriptions = ["compound","code","prerender","render","framerate","memory"];
+			descriptions = ["compound","code","prerender","sys/render","framerate","memory"];
 		}
 
 		public function compoundBars():Array

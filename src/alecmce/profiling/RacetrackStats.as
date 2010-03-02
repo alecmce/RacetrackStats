@@ -37,12 +37,9 @@ package alecmce.profiling
 	{
 		private const HANDLE_ERROR:String = "At the top of your application class, please add the line RacetrackStats.prep() in order for Racetrack stats to function correctly";
 		
-		private const WIDTH:int = 100;
-		private const HEIGHT:int = 60;
-		private const VALUES_TO_COUNT:int = 20;
 		private const ORIGIN:Point = new Point(0, 0);
 		private const OVERLAY:Point = new Point(2, 2);
-		private const OUTPUT:Point = new Point(52, 2);
+		private const OUTPUT:Point = new Point(40, 2);
 		private const TO_MEGABYTES:Number = 9.53674316e-7;
 		
 		private var stage:Stage;
@@ -73,35 +70,49 @@ package alecmce.profiling
 		private var second_time:int;
 		private var frames_per_second:int;
 		
+		private var maxMemory:uint;
+		
 		private var adjustFrameRate:Boolean;
+		private var frameRateIncrement:int;
 
 		public function RacetrackStats(stage:Stage, style:RacetrackStatsStyle = null)
 		{
 			if (!handle)
-				throw new Error(HANDLE_ERROR);
+			{
+				trace(HANDLE_ERROR);
+				prep();
+			}
 			
 			if (!style)
 				style = new RacetrackStatsStyle();
 			
 			this.stage = stage;
 			this.adjustFrameRate = style.adjustFrameRate;
+			stage.frameRate = 64;
+			frameRateIncrement = 1;
 			
-			container = new Sprite();
+			var width:uint = style.width;
+			var height:uint = style.height;
 			
-			overlay = new BitmapData(WIDTH, HEIGHT, true, 0);
-			output = new BitmapData(WIDTH, HEIGHT, true, 0);
+			var sprite:Sprite = new Sprite();
+			sprite.graphics.beginFill(0xFFFFFF);			sprite.graphics.drawRect(0, 0, width, height);			sprite.graphics.endFill();
+			
+			container = sprite;
+			
+			overlay = new BitmapData(width, height, true, 0);
+			output = new BitmapData(width, height, true, 0);
 			rect = overlay.rect;
 			writer = new PixelWriter();
-			writer.write("FPS\nMEMORY\nCODE\n\PRERENDER\nRENDER", overlay, OVERLAY);
+			writer.write("FPS\nMEM\nCODE\n\PRE\nSYS", overlay, OVERLAY);
 			
 			data = [0,0,0];
 			
-			compound = new IterativeCompoundGraph(WIDTH, HEIGHT, 50, style.compoundBars());
-			code = new IterativeGraphWithRollingMean(WIDTH,HEIGHT,50,style.codeBar(),style.codeTrend(),VALUES_TO_COUNT);
-			prerender = new IterativeGraphWithRollingMean(WIDTH,HEIGHT,50,style.prerenderBar(),style.prerenderTrend(),VALUES_TO_COUNT);
-			render = new IterativeGraphWithRollingMean(WIDTH,HEIGHT,50,style.renderBar(),style.renderTrend(),20);
-			framerate = new IterativeGraphWithRollingMean(WIDTH,HEIGHT,stage.frameRate + 1, style.framerateBar(), style.framerateTrend(), VALUES_TO_COUNT);
-			memory = new IterativeGraphWithRollingMean(WIDTH,HEIGHT,1000, style.memoryBar(), style.memoryTrend(), VALUES_TO_COUNT);
+			compound = new IterativeCompoundGraph(width, height, 50, style.compoundBars());
+			code = new IterativeGraphWithRollingMean(width,height,50,style.codeBar(),style.codeTrend(),style.meanValues);
+			prerender = new IterativeGraphWithRollingMean(width,height,50,style.prerenderBar(),style.prerenderTrend(),style.meanValues);
+			render = new IterativeGraphWithRollingMean(width,height,50,style.renderBar(),style.renderTrend(),20);
+			framerate = new IterativeGraphWithRollingMean(width,height,stage.frameRate + 1, style.framerateBar(), style.framerateTrend(), style.meanValues);
+			memory = new IterativeGraphWithRollingMean(width,height,1000, style.memoryBar(), style.memoryTrend(), style.meanValues);
 			graphs = [compound, code, prerender, render, framerate, memory];
 			descriptions = style.descriptions;
 			index = 0;
@@ -112,16 +123,16 @@ package alecmce.profiling
 			container.addChild(prev = new PixelButton(PixelButton.LEFT));			container.addChild(next = new PixelButton(PixelButton.RIGHT));
 
 			prev.addEventListener(MouseEvent.CLICK, onPrevious);			prev.x = 2;
-			prev.y = HEIGHT - PixelButton.HEIGHT - 2;
+			prev.y = height - PixelButton.HEIGHT - 2;
 			
 			next.addEventListener(MouseEvent.CLICK, onNext);
 			next.x = PixelButton.WIDTH + 4;
-			next.y = HEIGHT - PixelButton.HEIGHT - 2;
+			next.y = height - PixelButton.HEIGHT - 2;
 			
 			var offset:int = next.x + next.width + 6;
-			description = new Bitmap(new BitmapData(WIDTH - offset, PixelButton.HEIGHT, true, 0));
+			description = new Bitmap(new BitmapData(width - offset, PixelButton.HEIGHT, true, 0));
 			description.x = offset;
-			description.y = HEIGHT - PixelButton.HEIGHT;
+			description.y = height - PixelButton.HEIGHT;
 			container.addChild(description);
 			writer.write(descriptions[index], description.bitmapData, ORIGIN);
 			
@@ -194,10 +205,12 @@ package alecmce.profiling
 			
 			var frameRate:int = stage.frameRate;
 			var bytes:uint = System.totalMemory;
+			if (bytes > maxMemory)
+				maxMemory = bytes;
 			
 			var text:String = frames_per_second + "/" + frameRate + "\n";
-			text += (bytes * TO_MEGABYTES).toFixed(1) + "MB\n";
-			text += data.join("\n");
+			text += (bytes * TO_MEGABYTES).toFixed(1) + "/" + (maxMemory * TO_MEGABYTES).toFixed(1) + "MB\n";
+			text += int(data[0] * 0.1) + "%\n";			text += int(data[1] * 0.1) + "%\n";			text += int(data[2] * 0.1) + "%\n";
 			writer.write(text, output, OUTPUT);
 			
 			var n:Number = 1 / frames_per_second;
@@ -208,14 +221,25 @@ package alecmce.profiling
 			prerender.update(data[1]);
 			render.update(data[2]);
 			framerate.update(frames_per_second);
-			memory.update(bytes)
+			memory.update(bytes);
 			
 			if (adjustFrameRate)
 			{
 				if (frames_per_second >= frameRate)
-					stage.frameRate++;
-				else if (frames_per_second < frameRate * 0.8)
-					stage.frameRate--;
+				{
+					stage.frameRate += frameRateIncrement;
+					frameRateIncrement *= 2;
+				}
+				else if (frames_per_second < frameRate * 0.6)
+				{
+					frameRate -= frameRateIncrement;
+					stage.frameRate = frameRate > 1 ? frameRate : 1;
+					frameRateIncrement *= 2;
+				}
+				else
+				{
+					frameRateIncrement = 1;
+				}
 			}
 			
 			data[0] = data[1] = data[2] = 0;

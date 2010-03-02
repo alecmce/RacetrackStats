@@ -9,7 +9,6 @@ package alecmce.utils
 	import flash.display.Bitmap;
 	import flash.display.Sprite;
 	import flash.events.Event;
-	import flash.utils.getTimer;
 
 	public class RenderStatsTest extends Sprite 
 	{
@@ -55,7 +54,6 @@ package alecmce.utils
 
 		private function onEnterFrame(event:Event):void 
 		{
-			var t:int = getTimer();
 			slowdown(slowness++);
 			
 			iterative.update(int(Math.random() * maximum));
