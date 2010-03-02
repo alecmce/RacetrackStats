@@ -77,7 +77,7 @@ package demo
 				}
 			}
 			
-			arr[count] = i;
+			arr[count] = n;
 			
 			return arr;
 		}
