@@ -227,18 +227,24 @@ package alecmce.profiling
 			{
 				if (frames_per_second >= frameRate)
 				{
+					if (frameRateIncrement < 1)
+						frameRateIncrement = 1;
+					
 					stage.frameRate += frameRateIncrement;
 					frameRateIncrement *= 2;
 				}
 				else if (frames_per_second < frameRate * 0.6)
 				{
-					frameRate -= frameRateIncrement;
+					if (frameRateIncrement > -1)
+						frameRateIncrement = -1;
+					
+					frameRate += frameRateIncrement;
 					stage.frameRate = frameRate > 1 ? frameRate : 1;
 					frameRateIncrement *= 2;
 				}
 				else
 				{
-					frameRateIncrement = 1;
+					frameRateIncrement = 0;
 				}
 			}
 			
