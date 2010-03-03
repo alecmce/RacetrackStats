@@ -4,6 +4,7 @@ package demo
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
 	import flash.events.Event;
+	import flash.filters.BlurFilter;
 	import flash.filters.GlowFilter;
 
 	/**
@@ -17,10 +18,12 @@ package demo
 	 */
 	public class Smoke extends Bitmap implements Demo
 	{
-		private const PARTICLES:int = 100000;
+		private const PARTICLES:int = 10000000;
 		
 		private var _initX:int;
 		private var _initY:int;
+		
+		private var halfWidth:int;
 		
 		private var _x:Array;		private var _y:Array;		private var _dx:Array;		private var _dy:Array;		private var _ddx:Array;		private var _ddy:Array;
 		private var _alpha:Array;
@@ -33,9 +36,10 @@ package demo
 		public function Smoke(width:int, height:int)
 		{
 			super(new BitmapData(width, height, true, 0));
+			halfWidth = width * 0.5;
 			
 			reset();
-			filters = [new GlowFilter(0x99FFFFFF,1,10,10,30,1)];
+			filters = [new GlowFilter(0x99FFFFFF,1,10,10,30,1), new BlurFilter(10,10,2)];
 		}
 
 		private function initialIteration(event:Event):void 
@@ -55,10 +59,10 @@ package demo
 		{
 			_x[index] = _initX + Math.random() * 10;
 			_y[index] = _initY - Math.random() * 10;
-			_dx[index] = Math.random() * 0.5 - 0.25;
+			_dx[index] = Math.random() - 0.5;
 			_dy[index] = -1;
 			_ddx[index] = (Math.random() * 0.0008) - 0.0004;
-			_ddy[index] = Math.random() * -0.02;
+			_ddy[index] = Math.random() * -0.08;
 			_alpha[index] = 0x66FFFFFF;
 		}
 
