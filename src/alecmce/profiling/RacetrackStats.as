@@ -7,10 +7,7 @@ package alecmce.profiling
 
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
-	import flash.display.DisplayObjectContainer;
-	import flash.display.Shape;
 	import flash.display.Sprite;
-	import flash.display.Stage;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
@@ -33,18 +30,46 @@ package alecmce.profiling
 	 * 
 	 * Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
 	 */
-	public class RacetrackStats 
+	public class RacetrackStats extends Sprite
 	{
-		private const HANDLE_ERROR:String = "At the top of your application class, please add the line RacetrackStats.prep() in order for Racetrack stats to function correctly";
+		/** the singleton instance -- RacetrackStats must be a singleton, see below */
+		private static var stats:RacetrackStats;
+		
+		/**
+		 * The singleton instance enforces that only one RacetrackStats is created. It
+		 * should be referenced at the top of the application, even if it is not
+		 * immediately added to the stage. Failure to do so will cause bad data.
+		 * 
+		 * Listener priority is particular to the class in which listeners are defined,
+		 * so if I add a low priority listener from object A, then a high-priority listener
+		 * from object B, the listener from object A will be triggered before the listener
+		 * from object B. The only way RacetrackStats can guarantee that it captures all
+		 * of your code execution time is if it hooks itself to the ENTER_FRAME event before
+		 * any other code does.
+		 * 
+		 * However, you may not want to launch RacetrackStats immediately, because other items
+		 * may need to be constructed or initialised before it can be added to the stage; in this
+		 * case call RacetrackStats.prep() first, then construct RacetrackStats at your leisure
+		 */
+		public static function getInstance():RacetrackStats
+		{
+			if (!stats)
+			{
+				stats = new RacetrackStats();
+				stats.addEventListener(Event.ENTER_FRAME, stats.dummyEnterFrame);
+			}
+			
+			return stats;
+		}
+		
+		private const SINGLETON_ERROR:String = "Please reference RacetrackStats from the singleton instance, as early as possible in the application, otherwise results will be distorted";
 		
 		private const ORIGIN:Point = new Point(0, 0);
 		private const OVERLAY:Point = new Point(2, 2);
 		private const OUTPUT:Point = new Point(40, 2);
 		private const TO_MEGABYTES:Number = 9.53674316e-7;
 		
-		private var stage:Stage;
-		
-		private var container:DisplayObjectContainer;
+		private var style:RacetrackStatsStyle;
 		
 		private var data:Array;
 
@@ -75,29 +100,47 @@ package alecmce.profiling
 		private var adjustFrameRate:Boolean;
 		private var frameRateIncrement:int;
 
-		public function RacetrackStats(stage:Stage, style:RacetrackStatsStyle = null)
+		public function RacetrackStats(style:RacetrackStatsStyle = null)
 		{
-			if (!handle)
+			if (stats)
+				throw new Error(SINGLETON_ERROR);
+			
+			this.style = style ||= new RacetrackStatsStyle();
+			this.adjustFrameRate = style.adjustFrameRate;
+			
+			addEventListener(Event.ADDED_TO_STAGE, onAddedToStage, false, 0, true);
+			addEventListener(Event.RENDER, onRenderBegins, false, int.MAX_VALUE);
+			addEventListener(Event.RENDER, onRenderEnds, false, -int.MAX_VALUE);
+		}
+		
+		private function onAddedToStage(event:Event):void
+		{
+			removeEventListener(Event.ADDED_TO_STAGE, onAddedToStage);			addEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);			
+			init();	
+			if (adjustFrameRate)
 			{
-				trace(HANDLE_ERROR);
-				prep();
+				stage.frameRate = 64;
+				frameRateIncrement = 1;
 			}
 			
-			if (!style)
-				style = new RacetrackStatsStyle();
+			addEventListener(Event.ENTER_FRAME, onEnterFrame, false, int.MAX_VALUE);
+			second_time = time = getTimer();
+		}
+		
+		private function onRemovedFromStage(event:Event):void
+		{
+			removeEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);
+			addEventListener(Event.ADDED_TO_STAGE, onAddedToStage, false, 0, true);
 			
-			this.stage = stage;
-			this.adjustFrameRate = style.adjustFrameRate;
-			stage.frameRate = 64;
-			frameRateIncrement = 1;
-			
+			addEventListener(Event.ENTER_FRAME, dummyEnterFrame);			removeEventListener(Event.ENTER_FRAME, onEnterFrame);
+		}
+
+		private function init():void
+		{
 			var width:uint = style.width;
 			var height:uint = style.height;
 			
-			var sprite:Sprite = new Sprite();
-			sprite.graphics.beginFill(0xFFFFFF);			sprite.graphics.drawRect(0, 0, width, height);			sprite.graphics.endFill();
-			
-			container = sprite;
+			graphics.beginFill(0xFFFFFF);			graphics.drawRect(0, 0, width, height);			graphics.endFill();
 			
 			overlay = new BitmapData(width, height, true, 0);
 			output = new BitmapData(width, height, true, 0);
@@ -117,10 +160,10 @@ package alecmce.profiling
 			descriptions = style.descriptions;
 			index = 0;
 			
-			container.addChild(new Bitmap(output));
-			container.addChild(graph = new Bitmap(compound.data));
+			addChild(new Bitmap(output));
+			addChild(graph = new Bitmap(compound.data));
 			
-			container.addChild(prev = new PixelButton(PixelButton.LEFT));			container.addChild(next = new PixelButton(PixelButton.RIGHT));
+			addChild(prev = new PixelButton(PixelButton.LEFT));			addChild(next = new PixelButton(PixelButton.RIGHT));
 
 			prev.addEventListener(MouseEvent.CLICK, onPrevious);			prev.x = 2;
 			prev.y = height - PixelButton.HEIGHT - 2;
@@ -133,22 +176,12 @@ package alecmce.profiling
 			description = new Bitmap(new BitmapData(width - offset, PixelButton.HEIGHT, true, 0));
 			description.x = offset;
 			description.y = height - PixelButton.HEIGHT;
-			container.addChild(description);
+			addChild(description);
 			writer.write(descriptions[index], description.bitmapData, ORIGIN);
 			
-			stage.addChild(container);
-			
 			frames_per_second = 0;
-			second_time = time = getTimer();
-			
-			var node:Sprite = new Sprite();
-			DisplayObjectContainer(stage.root).addChild(node);
-			
-			handle.addEventListener(Event.ENTER_FRAME, onEnterFrame, false, int.MAX_VALUE);
-			stage.addEventListener(Event.RENDER, onRenderBegins, false, int.MAX_VALUE);
-			stage.addEventListener(Event.RENDER, onRenderEnds, false, -int.MAX_VALUE);	
 		}
-
+		
 		private function onNext(event:MouseEvent):void 
 		{
 			index = ++index % 6;
@@ -167,6 +200,11 @@ package alecmce.profiling
 			var data:BitmapData = description.bitmapData;
 			data.fillRect(data.rect, 0);
 			writer.write(descriptions[index], description.bitmapData, ORIGIN);
+		}
+		
+		private function dummyEnterFrame(event:Event):void
+		{
+			// worth doing anything useful here?
 		}
 
 		private function onEnterFrame(event:Event):void
@@ -214,7 +252,6 @@ package alecmce.profiling
 			writer.write(text, output, OUTPUT);
 			
 			var n:Number = 1 / frames_per_second;
-			
 			data[0] *= n;
 			data[1] *= n;			data[2] *= n;			compound.update(data);
 			code.update(data[0]);
@@ -250,20 +287,6 @@ package alecmce.profiling
 			
 			data[0] = data[1] = data[2] = 0;
 			frames_per_second = 0;
-		}
-		
-		
-		private static var handle:Shape;
-		
-		public static function prep():void
-		{
-			handle = new Shape();
-			handle.addEventListener(Event.ENTER_FRAME, onHandle);
-		}
-		
-		private static function onHandle(event:Event):void
-		{
-			handle.removeEventListener(Event.ENTER_FRAME, onHandle);
 		}
 	}
 }

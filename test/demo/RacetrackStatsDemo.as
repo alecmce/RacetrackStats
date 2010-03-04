@@ -6,21 +6,22 @@ package demo
 
 	public class RacetrackStatsDemo extends Sprite 
 	{
+		private var stats:RacetrackStats = RacetrackStats.getInstance();
+		
 		public function RacetrackStatsDemo()
 		{
-			RacetrackStats.prep();
-			new RacetrackStats(stage);
+			addChild(stats);
 			
 			var item:DemoItem;
 			
 			addChild(item = new DemoItem(Smoke));
 			item.x = 0;
 			item.y = 50;
-						addChild(item = new DemoItem(PrimeFactors));
-			item.x = 220;
+			
+			addChild(item = new DemoItem(PrimeFactors));			item.x = 220;
 			item.y = 50;
-						addChild(item = new DemoItem(TrippyDots));
-			item.x = 440;
+			
+			addChild(item = new DemoItem(TrippyDots));			item.x = 440;
 			item.y = 50;
 		}
 	}

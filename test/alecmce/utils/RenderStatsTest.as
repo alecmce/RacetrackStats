@@ -12,11 +12,9 @@ package alecmce.utils
 
 	public class RenderStatsTest extends Sprite 
 	{
-		RacetrackStats.prep();
+		private var stats:RacetrackStats = RacetrackStats.getInstance();
 		
 		private static const COUNT:int = 4;
-
-		public var stats:RacetrackStats;
 
 		public var iterative:IterativeGraph;
 		public var compound:IterativeCompoundGraph;
@@ -49,7 +47,7 @@ package alecmce.utils
 			bmp.x = 200; bmp.y = 200;
 			
 			addEventListener(Event.ENTER_FRAME, onEnterFrame);
-			stats = new RacetrackStats(stage);
+			stage.addChild(stats);
 		}
 
 		private function onEnterFrame(event:Event):void 
