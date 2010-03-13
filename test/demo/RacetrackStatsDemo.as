@@ -6,7 +6,7 @@ package demo
 
 	public class RacetrackStatsDemo extends Sprite 
 	{
-		private var stats:RacetrackStats = RacetrackStats.getInstance();
+		private var stats:RacetrackStats = new RacetrackStats();
 		
 		public function RacetrackStatsDemo()
 		{

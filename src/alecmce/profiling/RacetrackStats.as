@@ -54,10 +54,7 @@ package alecmce.profiling
 		public static function getInstance():RacetrackStats
 		{
 			if (!stats)
-			{
 				stats = new RacetrackStats();
-				stats.addEventListener(Event.ENTER_FRAME, stats.dummyEnterFrame);
-			}
 			
 			return stats;
 		}
@@ -103,7 +100,14 @@ package alecmce.profiling
 		public function RacetrackStats(style:RacetrackStatsStyle = null)
 		{
 			if (stats)
+			{
 				throw new Error(SINGLETON_ERROR);
+			}
+			else 
+			{
+				stats = this;
+				stats.addEventListener(Event.ENTER_FRAME, stats.dummyEnterFrame);
+			}
 			
 			this.style = style ||= new RacetrackStatsStyle();
 			this.adjustFrameRate = style.adjustFrameRate;
