@@ -4,7 +4,7 @@ package alecmce.profiling
 	import alecmce.stats.ui.iterativegraph.IterativeGraphWithRollingMean;
 	import alecmce.utils.PixelButton;
 	import alecmce.utils.PixelWriter;
-
+	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.Sprite;
@@ -12,6 +12,7 @@ package alecmce.profiling
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	import flash.system.Capabilities;
 	import flash.system.System;
 	import flash.utils.getTimer;
 
@@ -63,7 +64,7 @@ package alecmce.profiling
 		
 		private const ORIGIN:Point = new Point(0, 0);
 		private const OVERLAY:Point = new Point(2, 2);
-		private const OUTPUT:Point = new Point(40, 2);
+		private const OUTPUT:Point = new Point(32, 2);
 		private const TO_MEGABYTES:Number = 9.53674316e-7;
 		
 		private var style:RacetrackStatsStyle;
@@ -74,9 +75,11 @@ package alecmce.profiling
 		private var code:IterativeGraphWithRollingMean;
 		private var prerender:IterativeGraphWithRollingMean;
 		private var render:IterativeGraphWithRollingMean;
-		private var framerate:IterativeGraphWithRollingMean;		private var memory:IterativeGraphWithRollingMean;
+		private var framerate:IterativeGraphWithRollingMean;
+		private var memory:IterativeGraphWithRollingMean;
 		private var graph:Bitmap;
-		private var graphs:Array;		private var descriptions:Array;
+		private var graphs:Array;
+		private var descriptions:Array;
 		private var index:uint;
 
 		private var writer:PixelWriter;
@@ -96,6 +99,7 @@ package alecmce.profiling
 		
 		private var adjustFrameRate:Boolean;
 		private var frameRateIncrement:int;
+		private var systemInfo:String;
 
 		public function RacetrackStats(style:RacetrackStatsStyle = null)
 		{
@@ -111,6 +115,7 @@ package alecmce.profiling
 			
 			this.style = style ||= new RacetrackStatsStyle();
 			this.adjustFrameRate = style.adjustFrameRate;
+			this.systemInfo = Capabilities.version.replace(/,/g, ".");
 			
 			addEventListener(Event.ADDED_TO_STAGE, onAddedToStage, false, 0, true);
 			addEventListener(Event.RENDER, onRenderBegins, false, int.MAX_VALUE);
@@ -119,7 +124,9 @@ package alecmce.profiling
 		
 		private function onAddedToStage(event:Event):void
 		{
-			removeEventListener(Event.ADDED_TO_STAGE, onAddedToStage);			addEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);			
+			removeEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
+			addEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);
+			
 			init();	
 			if (adjustFrameRate)
 			{
@@ -136,7 +143,8 @@ package alecmce.profiling
 			removeEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);
 			addEventListener(Event.ADDED_TO_STAGE, onAddedToStage, false, 0, true);
 			
-			addEventListener(Event.ENTER_FRAME, dummyEnterFrame);			removeEventListener(Event.ENTER_FRAME, onEnterFrame);
+			addEventListener(Event.ENTER_FRAME, dummyEnterFrame);
+			removeEventListener(Event.ENTER_FRAME, onEnterFrame);
 		}
 
 		private function init():void
@@ -144,13 +152,15 @@ package alecmce.profiling
 			var width:uint = style.width;
 			var height:uint = style.height;
 			
-			graphics.beginFill(0xFFFFFF);			graphics.drawRect(0, 0, width, height);			graphics.endFill();
+			graphics.beginFill(0xFFFFFF);
+			graphics.drawRect(0, 0, width, height);
+			graphics.endFill();
 			
 			overlay = new BitmapData(width, height, true, 0);
 			output = new BitmapData(width, height, true, 0);
 			rect = overlay.rect;
 			writer = new PixelWriter();
-			writer.write("FPS\nMEM\nCODE\n\PRE\nSYS", overlay, OVERLAY);
+			writer.write("INFO\nFPS\nMEM\nCODE\n\PRE\nSYS", overlay, OVERLAY);
 			
 			data = [0,0,0];
 			
@@ -167,9 +177,11 @@ package alecmce.profiling
 			addChild(new Bitmap(output));
 			addChild(graph = new Bitmap(compound.data));
 			
-			addChild(prev = new PixelButton(PixelButton.LEFT));			addChild(next = new PixelButton(PixelButton.RIGHT));
+			addChild(prev = new PixelButton(PixelButton.LEFT));
+			addChild(next = new PixelButton(PixelButton.RIGHT));
 
-			prev.addEventListener(MouseEvent.CLICK, onPrevious);			prev.x = 2;
+			prev.addEventListener(MouseEvent.CLICK, onPrevious);
+			prev.x = 2;
 			prev.y = height - PixelButton.HEIGHT - 2;
 			
 			next.addEventListener(MouseEvent.CLICK, onNext);
@@ -199,7 +211,8 @@ package alecmce.profiling
 		}
 		
 		private function updateGraph():void
-		{			graph.bitmapData = graphs[index].data;
+		{
+			graph.bitmapData = graphs[index].data;
 			
 			var data:BitmapData = description.bitmapData;
 			data.fillRect(data.rect, 0);
@@ -250,14 +263,19 @@ package alecmce.profiling
 			if (bytes > maxMemory)
 				maxMemory = bytes;
 			
-			var text:String = frames_per_second + "/" + frameRate + "\n";
+			var text:String = systemInfo + "\n";
+			text += frames_per_second + "/" + frameRate + "\n";
 			text += (bytes * TO_MEGABYTES).toFixed(1) + "/" + (maxMemory * TO_MEGABYTES).toFixed(1) + "MB\n";
-			text += int(data[0] * 0.1) + "%\n";			text += int(data[1] * 0.1) + "%\n";			text += int(data[2] * 0.1) + "%\n";
+			text += int(data[0] * 0.1) + "%\n";
+			text += int(data[1] * 0.1) + "%\n";
+			text += int(data[2] * 0.1) + "%\n";
 			writer.write(text, output, OUTPUT);
 			
 			var n:Number = 1 / frames_per_second;
 			data[0] *= n;
-			data[1] *= n;			data[2] *= n;			compound.update(data);
+			data[1] *= n;
+			data[2] *= n;
+			compound.update(data);
 			code.update(data[0]);
 			prerender.update(data[1]);
 			render.update(data[2]);
