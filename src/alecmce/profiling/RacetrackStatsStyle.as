@@ -44,7 +44,7 @@ package alecmce.profiling
 			_defaultAlpha = 0x66;
 			_trendAlpha = 0xFF;
 			
-			adjustFrameRate = true;
+			adjustFrameRate = false;
 			
 			descriptions = ["compound","code","prerender","sys/render","framerate","memory"];
 		}
